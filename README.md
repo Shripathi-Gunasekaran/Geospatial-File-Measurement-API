@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Geospatial File Measurement API
 
 FastAPI backend service that accepts a KML file or a zipped Shapefile, extracts geospatial features, and returns feature metadata plus measurements for supported geometry types.
@@ -215,3 +216,6 @@ This project highlights a few practical geospatial API lessons:
 ## Submission
 
 Create a public GitHub repository, push this project, and share the repository link. The repository should include this README, source code, tests, and `requirements.txt`.
+=======
+# Geospatial-File-Measurement-API
+>>>>>>> d5d79a3b3b095619f62fe4f7d9adcaf61c3634be
