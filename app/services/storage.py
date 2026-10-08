@@ -49,6 +49,18 @@ class StorageService:
         data = json.loads(path.read_text(encoding="utf-8"))
         return FileRecord(**data)
 
+    def list_records(self) -> list[FileRecord]:
+        records: list[FileRecord] = []
+        paths = sorted(
+            self.metadata_dir.glob("*.json"),
+            key=lambda path: path.stat().st_mtime,
+            reverse=True,
+        )
+        for path in paths:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            records.append(FileRecord(**data))
+        return records
+
     def save_measurements(self, file_id: str, features: list[FeatureMeasurement]) -> None:
         path = self.measurements_dir / f"{file_id}.json"
         payload = [feature.model_dump(mode="json") for feature in features]

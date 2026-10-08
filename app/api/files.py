@@ -66,6 +66,13 @@ async def upload_file(
     return FileInfoResponse.model_validate(completed)
 
 
+@router.get("/", response_model=list[FileInfoResponse])
+def list_files(
+    storage: StorageService = Depends(get_storage_service),
+) -> list[FileInfoResponse]:
+    return [FileInfoResponse.model_validate(record) for record in storage.list_records()]
+
+
 @router.get("/{file_id}/", response_model=FileInfoResponse)
 def get_file_info(
     file_id: str,

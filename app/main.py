@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api.files import router as files_router
 from app.core.config import settings
@@ -10,6 +12,12 @@ app = FastAPI(
 )
 
 app.include_router(files_router, prefix="/api/files", tags=["files"])
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+
+@app.get("/", include_in_schema=False)
+def frontend() -> FileResponse:
+    return FileResponse("app/static/index.html")
 
 
 @app.get("/health", tags=["health"])

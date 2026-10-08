@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Geospatial File Measurement API</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Geospatial Measurement</p>
+          <h1>File Measurement Console</h1>
+        </div>
+        <a class="docs-link" href="/docs" target="_blank" rel="noreferrer">API Docs</a>
+      </header>
+
+      <section class="workspace">
+        <aside class="sidebar" aria-label="Uploaded files">
+          <form id="uploadForm" class="upload-panel">
+            <label id="dropZone" class="drop-zone" for="fileInput">
+              <span class="drop-icon" aria-hidden="true">+</span>
+              <span class="drop-title">Upload File</span>
+              <span class="drop-meta">KML or Shapefile ZIP</span>
+              <input id="fileInput" name="upload" type="file" accept=".kml,.zip" />
+            </label>
+            <button id="uploadButton" type="submit">Process File</button>
+            <p id="uploadStatus" class="status-line" role="status"></p>
+          </form>
+
+          <div class="file-list-header">
+            <h2>Files</h2>
+            <button id="refreshButton" type="button" title="Refresh files">Refresh</button>
+          </div>
+          <div id="fileList" class="file-list"></div>
+        </aside>
+
+        <section class="detail-panel" aria-live="polite">
+          <div id="emptyState" class="empty-state">
+            <h2>No file selected</h2>
+            <p>Select an uploaded file or process a new one.</p>
+          </div>
+
+          <div id="fileDetail" class="hidden">
+            <div class="detail-header">
+              <div>
+                <p id="detailStatus" class="pill">Status</p>
+                <h2 id="detailFilename">Filename</h2>
+                <p id="detailMeta" class="muted"></p>
+              </div>
+              <div class="summary-grid">
+                <div>
+                  <span>Features</span>
+                  <strong id="featureCount">0</strong>
+                </div>
+                <div>
+                  <span>Polygons</span>
+                  <strong id="polygonCount">0</strong>
+                </div>
+                <div>
+                  <span>Lines</span>
+                  <strong id="lineCount">0</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="viewer-grid">
+              <section class="map-panel">
+                <div class="panel-title">
+                  <h3>Geometry Preview</h3>
+                  <span id="previewCount" class="muted">0 features</span>
+                </div>
+                <canvas id="geometryCanvas" width="960" height="560"></canvas>
+              </section>
+
+              <section class="metrics-panel">
+                <div class="panel-title">
+                  <h3>Totals</h3>
+                </div>
+                <div class="metric-list">
+                  <div>
+                    <span>Total Area</span>
+                    <strong id="totalArea">0 m²</strong>
+                  </div>
+                  <div>
+                    <span>Total Length</span>
+                    <strong id="totalLength">0 m</strong>
+                  </div>
+                  <div>
+                    <span>CRS</span>
+                    <strong id="crsLabel">-</strong>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <section class="table-panel">
+              <div class="panel-title">
+                <h3>Measurements</h3>
+                <input id="featureSearch" type="search" placeholder="Search features" />
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Geometry</th>
+                      <th>Area</th>
+                      <th>Length</th>
+                      <th>Properties</th>
+                      <th>Message</th>
+                    </tr>
+                  </thead>
+                  <tbody id="measurementsBody"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
