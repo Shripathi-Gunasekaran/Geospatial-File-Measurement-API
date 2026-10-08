@@ -16,10 +16,17 @@ def get_processor() -> GeospatialProcessor:
 
 @router.post("/", response_model=FileInfoResponse, status_code=status.HTTP_201_CREATED)
 async def upload_file(
-    upload: UploadFile = File(...),
+    upload: UploadFile | None = File(None),
+    file: UploadFile | None = File(None),
     storage: StorageService = Depends(get_storage_service),
     processor: GeospatialProcessor = Depends(get_processor),
 ) -> FileInfoResponse:
+    upload = upload or file
+    if upload is None:
+        raise HTTPException(
+            status_code=400,
+            detail="No file received. Send a multipart file using the 'upload' or 'file' field.",
+        )
     if not upload.filename:
         raise HTTPException(status_code=400, detail="Uploaded file must have a filename.")
 

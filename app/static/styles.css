@@ -106,7 +106,7 @@ h3 {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
   gap: 18px;
 }
 
@@ -122,14 +122,20 @@ h3 {
 }
 
 .sidebar {
-  min-height: calc(100vh - 130px);
+  display: flex;
+  height: calc(100vh - 130px);
+  min-height: 420px;
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
   padding: 16px;
 }
 
 .upload-panel {
   display: grid;
   gap: 12px;
-  margin-bottom: 22px;
+  flex: 0 0 auto;
+  margin-bottom: 18px;
 }
 
 .drop-zone {
@@ -155,6 +161,11 @@ h3 {
   width: 1px;
   height: 1px;
   opacity: 0;
+}
+
+.drop-zone:focus-within {
+  outline: 2px solid var(--teal);
+  outline-offset: 3px;
 }
 
 .drop-icon {
@@ -215,13 +226,22 @@ h3 {
 }
 
 .file-list {
-  display: grid;
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
   gap: 8px;
+  overflow-y: auto;
   margin-top: 12px;
+  padding-right: 2px;
 }
 
 .file-item {
   width: 100%;
+  min-width: 0;
+  flex: 0 0 auto;
+  overflow: hidden;
   padding: 11px;
   border: 1px solid var(--line);
   border-radius: 7px;
@@ -239,6 +259,7 @@ h3 {
 .file-item strong,
 .file-item span {
   display: block;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -277,6 +298,20 @@ h3 {
 .detail-header {
   align-items: start;
   margin-bottom: 16px;
+}
+
+.detail-header > div:first-child {
+  min-width: 0;
+}
+
+.detail-error {
+  margin: 8px 0 0;
+  padding: 9px 11px;
+  border: 1px solid #f0cecb;
+  border-radius: 6px;
+  background: #fff5f4;
+  color: var(--red);
+  overflow-wrap: anywhere;
 }
 
 .pill {
@@ -443,7 +478,17 @@ tbody tr:hover {
 
   .sidebar,
   .detail-panel {
+    height: auto;
     min-height: auto;
+  }
+
+  .sidebar {
+    overflow: visible;
+  }
+
+  .file-list {
+    max-height: min(55vh, 420px);
+    flex: 0 1 auto;
   }
 
   .detail-header {
@@ -463,6 +508,11 @@ tbody tr:hover {
 
   .summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .detail-panel,
+  .sidebar {
+    padding: 14px;
   }
 
   .file-list-header,

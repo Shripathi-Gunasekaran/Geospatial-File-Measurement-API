@@ -87,9 +87,12 @@ class GeospatialProcessor:
 
     def _read_kml(self, path: Path) -> tuple[list[RawFeature], str | None]:
         try:
-            return self._read_with_geopandas(path)
-        except Exception:
+            features, crs = self._read_with_geopandas(path)
+        except ProcessingError:
             return self._read_kml_with_element_tree(path)
+        if features:
+            return features, crs
+        return self._read_kml_with_element_tree(path)
 
     def _read_with_geopandas(self, path: Path) -> tuple[list[RawFeature], str | None]:
         try:

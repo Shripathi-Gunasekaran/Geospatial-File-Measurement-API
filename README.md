@@ -1,19 +1,21 @@
-<<<<<<< HEAD
 # Geospatial File Measurement API
 
-FastAPI backend service that accepts a KML file or a zipped Shapefile, extracts geospatial features, and returns feature metadata plus measurements for supported geometry types.
+FastAPI backend service with a browser frontend for uploading KML files or zipped Shapefiles, extracting geospatial features, and returning measurements.
 
 ## Features
 
 - Upload `.kml` files or `.zip` archives containing one Shapefile.
+- View uploaded files in a browser UI at `/`.
 - Extract feature ID, geometry type, GeoJSON geometry, CRS, and properties.
 - Calculate polygon area in square meters.
 - Calculate line length in meters.
 - Handle point and unsupported geometries gracefully.
 - Persist uploaded file metadata and measurements locally as JSON.
-- Avoid measuring latitude/longitude degrees by projecting geographic data before calculation.
+- Project geographic coordinates before measurement so area/length are not calculated in latitude/longitude degrees.
 
 ## Setup
+
+Requires Python 3.12 or later.
 
 Create and activate a virtual environment:
 
@@ -28,15 +30,19 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-Run the API:
+Run the application:
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-The API will be available at `http://127.0.0.1:8000`.
+Open the frontend:
 
-Interactive API documentation is available at:
+```text
+http://127.0.0.1:8000/
+```
+
+Interactive API documentation:
 
 - `http://127.0.0.1:8000/docs`
 - `http://127.0.0.1:8000/redoc`
@@ -53,9 +59,15 @@ Response:
 
 ```json
 {
-  "status": "ok"
+  "status": "ok",
+  "app": "Geospatial File Measurement API",
+  "version": "1.0.0"
 }
 ```
+
+Errors use FastAPI's standard `{"detail": "..."}` response shape. Missing or
+unsupported uploads return `400`; files that cannot be parsed or contain no
+features return `422`.
 
 ### Upload File
 
@@ -66,13 +78,13 @@ Content-Type: multipart/form-data
 
 Form field:
 
-- `upload`: `.kml` file or `.zip` containing a Shapefile.
+- `upload` (or `file`): `.kml` file or `.zip` containing a Shapefile.
 
 Example:
 
 ```bash
 curl -X POST "http://127.0.0.1:8000/api/files/" \
-  -F "upload=@survey.kml"
+  -F "upload=@samples/sample.kml"
 ```
 
 Response:
@@ -80,12 +92,33 @@ Response:
 ```json
 {
   "id": "abc123",
-  "filename": "survey.kml",
-  "feature_count": 120,
+  "filename": "sample.kml",
+  "feature_count": 3,
   "crs": "EPSG:4326",
   "status": "COMPLETED",
   "error": null
 }
+```
+
+### List Files
+
+```http
+GET /api/files/
+```
+
+Response:
+
+```json
+[
+  {
+    "id": "abc123",
+    "filename": "sample.kml",
+    "feature_count": 3,
+    "crs": "EPSG:4326",
+    "status": "COMPLETED",
+    "error": null
+  }
+]
 ```
 
 ### File Information
@@ -145,15 +178,28 @@ Response:
 ```text
 app/
   api/              FastAPI route handlers
-  core/             Configuration and application settings
+  core/             Settings and application configuration
   models/           Pydantic response and domain schemas
   services/         File storage and geospatial processing
+  static/           Browser frontend
+samples/            Sample geospatial file for manual testing
 tests/              Focused measurement tests
 ```
 
+### Backend Framework
+
+The backend uses FastAPI with:
+
+- Application factory: `create_app()` in `app/main.py`.
+- OpenAPI metadata and route tags.
+- CORS middleware controlled by `GEO_API_CORS_ORIGINS`.
+- Static file serving for the frontend.
+- Dependency-injected storage and processing services.
+- Pydantic response models for API contracts.
+
 ### File Processing Flow
 
-1. `POST /api/files/` validates the extension.
+1. `POST /api/files/` validates the file extension.
 2. The uploaded file is saved under `data/uploads/`.
 3. Metadata is written with `PROCESSING` status.
 4. `GeospatialProcessor` reads the file.
@@ -164,8 +210,6 @@ tests/              Focused measurement tests
 For Shapefiles, the service expects a `.zip` archive with exactly one `.shp` file and rejects unsafe archive paths before extraction. For KML, it first uses GeoPandas and falls back to a built-in XML parser for common `Point`, `LineString`, and `Polygon` placemarks.
 
 ### Measurement Flow
-
-Each feature is measured based on geometry type:
 
 - `Polygon` and `MultiPolygon`: area in square meters.
 - `LineString` and `MultiLineString`: length in meters.
@@ -178,30 +222,30 @@ The service reads the source CRS from the uploaded dataset when available. If th
 
 ## Design Decisions
 
-- **FastAPI** was chosen because it provides concise request handling, automatic OpenAPI docs, and strong Pydantic integration.
+- **FastAPI** was chosen for concise route handling, automatic OpenAPI documentation, and Pydantic integration.
 - **GeoPandas/Shapely/PyProj** were chosen for mature geospatial file reading, geometry operations, and CRS transformations.
-- **Local JSON persistence** keeps the project easy to run without a database. In production, this would be replaced by PostgreSQL/PostGIS or object storage plus a relational metadata table.
-- **Synchronous processing** keeps the implementation straightforward for the assignment. For large uploads, a background queue such as Celery, RQ, or FastAPI background workers would improve reliability.
-- **Per-feature UTM projection** is simple and accurate for local measurements. For datasets covering very large regions, a geodesic calculation or equal-area projection strategy may be preferable.
+- **Local JSON persistence** keeps the project easy to run without a database. In production, this can be replaced by PostgreSQL/PostGIS or object storage plus relational metadata.
+- **Synchronous processing** keeps the assignment implementation straightforward. For large uploads, a background queue such as Celery, RQ, or FastAPI background workers would improve reliability.
+- **Per-feature UTM projection** is simple and accurate for local measurements. For very large regions, a geodesic calculation or equal-area projection strategy may be preferable.
 
 ## Tests
 
 Run:
 
 ```bash
-pytest
+python -m pytest
 ```
 
-The included tests focus on the critical measurement behavior: geographic inputs are projected before area and length calculations.
+The tests cover KML and Shapefile ZIP processing, upload field aliases, saved
+file and measurement responses, unsupported geometries, and projected area and
+length calculations.
 
 ## Learning
 
-This project highlights a few practical geospatial API lessons:
-
-- Geometry libraries can compute fast, but they need the correct CRS context.
-- File upload APIs should validate both extension and archive contents.
+- Geometry libraries need correct CRS context.
+- File upload APIs should validate extension and archive contents.
 - KML support varies across GDAL installations, so a narrow fallback parser improves portability.
-- Clear unsupported-geometry responses are better than letting unexpected shapes crash the API.
+- Clear unsupported-geometry responses are better than unexpected API crashes.
 
 ## Future Scope
 
@@ -215,7 +259,7 @@ This project highlights a few practical geospatial API lessons:
 
 ## Submission
 
-Create a public GitHub repository, push this project, and share the repository link. The repository should include this README, source code, tests, and `requirements.txt`.
-=======
-# Geospatial-File-Measurement-API
->>>>>>> d5d79a3b3b095619f62fe4f7d9adcaf61c3634be
+Public GitHub repository: [Shripathi-Gunasekaran/Geospatial-File-Measurement-API](https://github.com/Shripathi-Gunasekaran/Geospatial-File-Measurement-API).
+
+The repository includes this README, source code, tests, sample data, and
+`requirements.txt`.

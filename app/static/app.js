@@ -18,6 +18,7 @@ const elements = {
   detailStatus: document.querySelector("#detailStatus"),
   detailFilename: document.querySelector("#detailFilename"),
   detailMeta: document.querySelector("#detailMeta"),
+  detailError: document.querySelector("#detailError"),
   featureCount: document.querySelector("#featureCount"),
   polygonCount: document.querySelector("#polygonCount"),
   lineCount: document.querySelector("#lineCount"),
@@ -110,6 +111,8 @@ function renderDetail(file) {
   elements.detailStatus.classList.toggle("failed", file.status === "FAILED");
   elements.detailFilename.textContent = file.filename;
   elements.detailMeta.textContent = `${file.id} · ${file.crs || "CRS unavailable"}`;
+  elements.detailError.textContent = file.error || "";
+  elements.detailError.classList.toggle("hidden", !file.error);
   elements.featureCount.textContent = file.feature_count;
   elements.crsLabel.textContent = file.crs || "-";
 

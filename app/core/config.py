@@ -5,6 +5,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str = "Geospatial File Measurement API"
+    app_version: str = "1.0.0"
+    cors_origins: list[str] = [
+        "http://127.0.0.1:8000",
+        "http://localhost:8000",
+    ]
     data_dir: Path = Path("data")
     upload_dir: Path = Path("data/uploads")
     metadata_dir: Path = Path("data/metadata")
